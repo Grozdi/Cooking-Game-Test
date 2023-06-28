@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private GameInput gameInput;
+    [SerializeField] private LayerMask countersLayersMask;
     private bool isWalking;
+    private Vector3 lastInteractDir;
  private void Update()
     {
         HandleMovement(); 
@@ -20,12 +23,24 @@ public class Player : MonoBehaviour
 
     private void HandleInteractions()
     {
-        float interactDistance = 2f;
         Vector2 inputVector = gameInput.GetMovementVectorNormalized();
-
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
+        float interactDistance = 2f;
+        if (moveDir != Vector3.zero)
+        {
+            lastInteractDir = moveDir;
+        }
+        
 
-        Physics.Raycast(transform.position, moveDir,out RaycastHit raycastHit, interactDistance);
+        
+
+      if  (Physics.Raycast(transform.position, lastInteractDir,out RaycastHit raycastHit, interactDistance,countersLayersMask))
+        {
+            if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter)){
+                clearCounter.Interact();
+            }
+            
+        }
     }
     private void HandleMovement()
     {
